@@ -2,6 +2,7 @@
 
 namespace Telegram\Bot;
 
+use Illuminate\Support\Traits\Macroable;
 use Telegram\Bot\Exceptions\TelegramSDKException;
 use Telegram\Bot\HttpClients\HttpClientInterface;
 
@@ -12,17 +13,24 @@ use Telegram\Bot\HttpClients\HttpClientInterface;
  */
 class Api
 {
+    use Macroable {
+        __call as macroCall;
+    }
+
     use Events\EmitsEvents,
         Traits\Http,
         Traits\CommandsHandler,
         Traits\HasContainer;
-
     use Methods\Chat,
         Methods\EditMessage,
         Methods\Game,
         Methods\Get,
+        Methods\Location,
         Methods\Message,
+        Methods\Passport,
+        Methods\Payments,
         Methods\Query,
+        Methods\Stickers,
         Methods\Update;
 
     /** @var string Version number of the Telegram Bot PHP SDK. */
@@ -35,10 +43,9 @@ class Api
      * Instantiates a new Telegram super-class object.
      *
      *
-     * @param string                   $token                 The Telegram Bot API Access Token.
-     * @param bool                     $async                 (Optional) Indicates if the request to Telegram
-     *                                                        will be asynchronous (non-blocking).
-     * @param HttpClientInterface|null $httpClientHandler     (Optional) Custom HTTP Client Handler.
+     * @param string                   $token             The Telegram Bot API Access Token.
+     * @param bool                     $async             (Optional) Indicates if the request to Telegram will be asynchronous (non-blocking).
+     * @param HttpClientInterface|null $httpClientHandler (Optional) Custom HTTP Client Handler.
      *
      * @throws TelegramSDKException
      */
@@ -47,7 +54,10 @@ class Api
         $this->accessToken = $token ?? getenv(static::BOT_TOKEN_ENV_NAME);
         $this->validateAccessToken();
 
-        $this->setAsyncRequest($async);
+        if ($async) {
+            $this->setAsyncRequest($async);
+        }
+
         $this->httpClientHandler = $httpClientHandler;
     }
 
@@ -73,6 +83,10 @@ class Api
      */
     public function __call($method, $arguments)
     {
+        if (static::hasMacro($method)) {
+            return $this->macroCall($method, $arguments);
+        }
+
         if (method_exists($this, $method)) {
             return call_user_func_array([$this, $method], $arguments);
         }
@@ -87,7 +101,7 @@ class Api
 
     private function validateAccessToken()
     {
-        if (! $this->accessToken) {
+        if (! $this->accessToken || ! is_string($this->accessToken)) {
             throw TelegramSDKException::tokenNotProvided(static::BOT_TOKEN_ENV_NAME);
         }
     }

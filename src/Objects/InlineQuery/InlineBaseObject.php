@@ -5,7 +5,7 @@ namespace Telegram\Bot\Objects\InlineQuery;
 use Illuminate\Support\Collection;
 
 /**
- * Class InlineBaseObject
+ * Class InlineBaseObject.
  */
 abstract class InlineBaseObject extends Collection
 {
@@ -33,7 +33,7 @@ abstract class InlineBaseObject extends Collection
      */
     public function __call($name, $arguments)
     {
-        if (!starts_with($name, 'set')) {
+        if (! starts_with($name, 'set')) {
             throw new \BadMethodCallException("Method {$name} does not exist.");
         }
         $property = snake_case(substr($name, 3));
@@ -41,6 +41,4 @@ abstract class InlineBaseObject extends Collection
 
         return $this;
     }
-
-
 }

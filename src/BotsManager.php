@@ -4,9 +4,10 @@ namespace Telegram\Bot;
 
 use InvalidArgumentException;
 use Illuminate\Contracts\Container\Container;
+use Telegram\Bot\Exceptions\TelegramSDKException;
 
 /**
- * Class BotsManager
+ * Class BotsManager.
  */
 class BotsManager
 {
@@ -58,7 +59,7 @@ class BotsManager
 
         $bots = collect($this->getConfig('bots'));
 
-        if (!$config = $bots->get($name, null)) {
+        if (! $config = $bots->get($name, null)) {
             throw new InvalidArgumentException("Bot [$name] not configured.");
         }
 
@@ -78,7 +79,7 @@ class BotsManager
     {
         $name = $name ?? $this->getDefaultBotName();
 
-        if (!isset($this->bots[$name])) {
+        if (! isset($this->bots[$name])) {
             $this->bots[$name] = $this->makeBot($name);
         }
 
@@ -118,8 +119,8 @@ class BotsManager
     /**
      * Get the specified configuration value for Telegram.
      *
-     * @param  string $key
-     * @param  mixed  $default
+     * @param string $key
+     * @param mixed  $default
      *
      * @return mixed
      */
@@ -131,9 +132,11 @@ class BotsManager
     /**
      * Get the default bot name.
      *
-     * @return string
+     * @throws TelegramSDKException
+     *
+     * @return string|null
      */
-    public function getDefaultBotName(): string
+    public function getDefaultBotName()
     {
         return $this->getConfig('default');
     }
@@ -186,7 +189,6 @@ class BotsManager
         $config = $this->getBotConfig($name);
 
         $token = array_get($config, 'token');
-        $commands = array_get($config, 'commands', []);
 
         $telegram = new Api(
             $token,
@@ -199,6 +201,7 @@ class BotsManager
             $telegram->setContainer($this->container);
         }
 
+        $commands = array_get($config, 'commands', []);
         $commands = $this->parseBotCommands($commands);
 
         // Register Commands
@@ -214,7 +217,7 @@ class BotsManager
      *
      * @return array An array of commands which includes global and bot specific commands.
      */
-    protected function parseBotCommands(array $commands): array
+    public function parseBotCommands(array $commands): array
     {
         $globalCommands = $this->getConfig('commands', []);
         $parsedCommands = $this->parseCommands($commands);
@@ -231,7 +234,7 @@ class BotsManager
      */
     protected function parseCommands(array $commands): array
     {
-        if (!is_array($commands)) {
+        if (! is_array($commands)) {
             return $commands;
         }
 
@@ -249,7 +252,6 @@ class BotsManager
                 );
 
                 continue;
-
             }
 
             // If this command is actually a shared command, we'll extract the full
@@ -258,7 +260,7 @@ class BotsManager
                 $command = $sharedCommands[$command];
             }
 
-            if (!in_array($command, $results)) {
+            if (! in_array($command, $results)) {
                 $results[] = $command;
             }
         }

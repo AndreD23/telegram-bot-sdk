@@ -3,6 +3,8 @@
 namespace Telegram\Bot\Objects;
 
 use Illuminate\Support\Collection;
+use Telegram\Bot\Objects\Payments\ShippingQuery;
+use Telegram\Bot\Objects\Payments\PreCheckoutQuery;
 
 /**
  * Class Update.
@@ -22,6 +24,10 @@ use Illuminate\Support\Collection;
  * @property ChosenInlineResult $chosenInlineResult     (Optional). A result of an inline query that was chosen by the
  *                                                      user and sent to their chat partner.
  * @property CallbackQuery      $callbackQuery          (Optional). Incoming callback query.
+ * @property ShippingQuery      $shippingQuery          (Optional). New incoming shipping query. Only for invoices with
+ *                                                      flexible price
+ * @property PreCheckoutQuery   $preCheckoutQuery       (Optional). New incoming pre-checkout query. Contains full
+ *                                                      information about checkout
  *
  * @link https://core.telegram.org/bots/api#update
  */
@@ -54,7 +60,7 @@ class Update extends BaseObject
     }
 
     /**
-     * Determine if the update is of given type
+     * Determine if the update is of given type.
      *
      * @param string $type
      *
@@ -84,6 +90,8 @@ class Update extends BaseObject
             'inline_query',
             'chosen_inline_result',
             'callback_query',
+            'shipping_query',
+            'pre_checkout_query',
         ];
 
         return $this->keys()
@@ -92,7 +100,7 @@ class Update extends BaseObject
     }
 
     /**
-     * Get the message contained in the Update
+     * Get the message contained in the Update.
      *
      * @return Message|EditedMessage|Collection
      */
@@ -107,19 +115,27 @@ class Update extends BaseObject
                 return $this->channelPost;
             case 'edited_channel_post':
                 return $this->editedChannelPost;
+            case 'inline_query':
+                return $this->inlineQuery;
+            case 'chosen_inline_result':
+                return $this->chosenInlineResult;
             case 'callback_query':
                 $callbackQuery = $this->callbackQuery;
                 if ($callbackQuery->has('message')) {
                     return $callbackQuery->message;
                 }
                 break;
+            case 'shipping_query':
+                return $this->shippingQuery;
+            case 'pre_checkout_query':
+                return $this->preCheckoutQuery;
         }
 
         return collect();
     }
 
     /**
-     * Get chat object (if exists)
+     * Get chat object (if exists).
      *
      * @return Chat|Collection
      */
@@ -130,4 +146,13 @@ class Update extends BaseObject
         return $message->has('chat') ? $message->get('chat') : collect();
     }
 
+    /**
+     * Is there a command entity in this update object
+     *
+     * @return bool
+     */
+    public function hasCommand()
+    {
+        return (bool)$this->getMessage()->get('entities', collect())->contains('type', 'bot_command');
+    }
 }

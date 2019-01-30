@@ -5,7 +5,7 @@ namespace Telegram\Bot\Traits;
 use Telegram\Bot\FileUpload\InputFile;
 
 /**
- * Validator
+ * Validator.
  */
 trait Validator
 {
@@ -37,13 +37,13 @@ trait Validator
     /**
      * Determine the given string is a file id.
      *
-     * @param  string $value
+     * @param string $value
      *
      * @return bool
      */
     protected function isFileId($value): bool
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             return false;
         }
 
@@ -51,7 +51,7 @@ trait Validator
     }
 
     /**
-     * Determine given string is a URL
+     * Determine given string is a URL.
      *
      * @param string $value A filename or URL to a sticker
      *
@@ -59,6 +59,6 @@ trait Validator
      */
     protected function isUrl($value): bool
     {
-        return (bool)filter_var($value, FILTER_VALIDATE_URL);
+        return (bool) filter_var($value, FILTER_VALIDATE_URL);
     }
 }

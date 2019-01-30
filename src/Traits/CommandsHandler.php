@@ -6,7 +6,7 @@ use Telegram\Bot\Objects\Update;
 use Telegram\Bot\Commands\CommandBus;
 
 /**
- * CommandsHandler
+ * CommandsHandler.
  */
 trait CommandsHandler
 {
@@ -114,6 +114,6 @@ trait CommandsHandler
      */
     public function triggerCommand(string $name, Update $update)
     {
-        return $this->getCommandBus()->execute($name, $update);
+        return $this->getCommandBus()->execute($name, $update, []);
     }
 }

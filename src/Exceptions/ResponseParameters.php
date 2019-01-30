@@ -1,6 +1,6 @@
 <?php
 
-namespace Telegram\Bot\Objects;
+namespace Telegram\Bot\Exceptions;
 
 /**
  * Class ResponseParameters.
@@ -20,5 +20,4 @@ namespace Telegram\Bot\Objects;
  */
 class ResponseParameters
 {
-
 }

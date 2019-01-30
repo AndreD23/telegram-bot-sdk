@@ -6,7 +6,7 @@ use League\Event\Emitter;
 use League\Event\EventInterface;
 
 /**
- * EmitsEvents
+ * EmitsEvents.
  */
 trait EmitsEvents
 {
@@ -19,6 +19,7 @@ trait EmitsEvents
      * @param EventInterface|string $event
      *
      * @throws \InvalidArgumentException
+     *
      * @return bool true if emitted, false otherwise.
      */
     protected function emitEvent($event): bool
@@ -40,6 +41,7 @@ trait EmitsEvents
      * @param EventInterface[]|string[] $events
      *
      * @throws \InvalidArgumentException
+     *
      * @return bool true if all emitted, false otherwise
      */
     private function emitBatchOfEvents(array $events): bool

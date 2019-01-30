@@ -2,16 +2,16 @@
 
 namespace Telegram\Bot\Traits;
 
-use Telegram\Bot\Exceptions\CouldNotUploadInputFile;
-use Telegram\Bot\Exceptions\TelegramSDKException;
-use Telegram\Bot\FileUpload\InputFile;
-use Telegram\Bot\HttpClients\HttpClientInterface;
 use Telegram\Bot\TelegramClient;
 use Telegram\Bot\TelegramRequest;
 use Telegram\Bot\TelegramResponse;
+use Telegram\Bot\FileUpload\InputFile;
+use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\HttpClients\HttpClientInterface;
+use Telegram\Bot\Exceptions\CouldNotUploadInputFile;
 
 /**
- * Http
+ * Http.
  */
 trait Http
 {
@@ -188,6 +188,7 @@ trait Http
      * @param array  $params
      * @param bool   $fileUpload Set true if a file is being uploaded.
      *
+     * @throws TelegramSDKException
      * @return TelegramResponse
      */
     protected function post(string $endpoint, array $params = [], $fileUpload = false): TelegramResponse
@@ -207,7 +208,7 @@ trait Http
     protected function replyMarkupToString(array $params): array
     {
         if (isset($params['reply_markup'])) {
-            $params['reply_markup'] = (string)$params['reply_markup'];
+            $params['reply_markup'] = (string) $params['reply_markup'];
         }
 
         return $params;
@@ -222,12 +223,17 @@ trait Http
      * @param string $inputFileField
      *
      * @throws CouldNotUploadInputFile
+     *
      * @return TelegramResponse
      */
     protected function uploadFile(string $endpoint, array $params, $inputFileField): TelegramResponse
     {
         //Check if the field in the $params array (that is being used to send the relative file), is a file id.
-        if (!isset($params[$inputFileField]) || $this->hasFileId($inputFileField, $params)) {
+        if (! isset($params[$inputFileField])) {
+            throw CouldNotUploadInputFile::missingParam($inputFileField);
+        }
+
+        if ($this->hasFileId($inputFileField, $params)) {
             return $this->post($endpoint, $params);
         }
 
@@ -242,6 +248,7 @@ trait Http
      * @param string $inputFileField
      *
      * @throws CouldNotUploadInputFile
+     *
      * @return array
      */
     protected function prepareMultipartParams(array $params, $inputFileField): array
@@ -251,7 +258,7 @@ trait Http
         //Iterate through all param options and convert to multipart/form-data.
         return collect($params)
             ->reject(function ($value) {
-                return is_null($value);
+                return null === $value;
             })
             ->map(function ($contents, $name) {
                 return $this->generateMultipartData($contents, $name);
@@ -270,16 +277,15 @@ trait Http
      */
     protected function generateMultipartData($contents, $name): array
     {
-        if (!$this->isInputFile($contents)) {
+        if (! $this->isInputFile($contents)) {
             return compact('name', 'contents');
         }
-        
+
         $filename = $contents->getFilename();
         $contents = $contents->getContents();
 
         return compact('name', 'contents', 'filename');
     }
-
 
     /**
      * Sends a request to Telegram Bot API and returns the result.
@@ -324,8 +330,10 @@ trait Http
     /**
      * @param array $params
      * @param $inputFileField
-     * @return array
+     *
      * @throws \Telegram\Bot\Exceptions\CouldNotUploadInputFile
+     *
+     * @return array
      */
     protected function validateInputFileField(array $params, $inputFileField)
     {
@@ -342,6 +350,7 @@ trait Http
     /**
      * @param array $params
      * @param $fileUpload
+     *
      * @return array
      */
     private function normalizeParams(array $params, $fileUpload)
@@ -349,6 +358,7 @@ trait Http
         if ($fileUpload) {
             return ['multipart' => $params];
         }
+
         return ['form_params' => $this->replyMarkupToString($params)];
     }
 }

@@ -71,7 +71,7 @@ class WebhookCommand extends Command
     }
 
     /**
-     * Setup Webhook
+     * Setup Webhook.
      */
     protected function setupWebhook()
     {
@@ -93,12 +93,11 @@ class WebhookCommand extends Command
     }
 
     /**
-     * Remove Webhook
+     * Remove Webhook.
      */
     protected function removeWebHook()
     {
         if ($this->confirm("Are you sure you want to remove the webhook for {$this->config['bot']}?")) {
-
             $this->info('Removing webhook...');
 
             if ($this->telegram->removeWebhook()) {
@@ -112,13 +111,13 @@ class WebhookCommand extends Command
     }
 
     /**
-     * Get Webhook Info
+     * Get Webhook Info.
      */
     protected function getInfo()
     {
         $this->alert('Webhook Info');
 
-        if ($this->hasArgument('bot') && !$this->option('all')) {
+        if ($this->hasArgument('bot') && ! $this->option('all')) {
             $response = $this->telegram->getWebhookInfo();
             $this->makeWebhookInfoResponse($response, $this->config['username']);
 
@@ -150,7 +149,7 @@ class WebhookCommand extends Command
         })->toArray();
 
         $this->table([
-            [new TableCell('Bot: ' . $bot, ['colspan' => 2])],
+            [new TableCell('Bot: '.$bot, ['colspan' => 2])],
             ['Key', 'Info'],
         ], $rows);
     }
@@ -167,4 +166,3 @@ class WebhookCommand extends Command
         return $value ? 'Yes' : 'No';
     }
 }
-
